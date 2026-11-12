@@ -9,5 +9,8 @@ __pycache__/
 # Experiment runs (data, chats, scores, model checkpoints)
 runs/
 
+# Dataset library (built by library/build.py and library/embed.py)
+library/data/
+
 # md files
 PLAN.md

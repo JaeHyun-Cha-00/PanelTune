@@ -5,8 +5,10 @@ requires-python = ">=3.12"
 dependencies = [
     "accelerate>=1.15.0",
     "datasets>=5.2.0",
+    "lm-eval[ifeval]>=0.4.13",
     "openai>=3.49.0",
     "python-dotenv>=1.2.4",
+    "sentence-transformers>=6.3.0",
     "torch>=2.15.0",
     "transformers>=5.22.2",
     "trl>=1.17.1",
