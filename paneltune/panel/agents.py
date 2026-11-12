@@ -1,6 +1,8 @@
 import os
+import json
 from dotenv import load_dotenv
 from openai import OpenAI
+from paneltune.panel.tools import TOOL_FUNCTIONS, NEEDS_AGENT_ID, REVIEWER_TOOLS
 
 load_dotenv()
 
@@ -13,7 +15,7 @@ deepinfra_client = OpenAI(
 openrouter_client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
     base_url="https://openrouter.ai/api/v1",
-    max_retries=3, 
+    max_retries=3,
 )
 
 agent_dict = {
@@ -32,43 +34,59 @@ token_usage = {
     5: {"prompt": 0, "completion": 0},
 }
 
-def agent_ask(agent_id, messages):
+def run_tool(agent_id, call):
+
+    name = call.function.name
+    args = json.loads(call.function.arguments or "{}")
+
+    if name in NEEDS_AGENT_ID:
+        args["agent_id"] = agent_id
+
+    return TOOL_FUNCTIONS[name](**args)
+
+def agent_ask(agent_id, messages, tools=None):
 
     agent = agent_dict[agent_id]
+    messages = list(messages)
 
     if agent["provider"] == "deepinfra":
         client = deepinfra_client
     else:
         client = openrouter_client
 
-    response = client.chat.completions.create(
-        model=agent["model"],
-        messages=messages,
-        temperature=0.7
-    )
+    for _ in range(5):
+        response = client.chat.completions.create(
+            model=agent["model"],
+            messages=messages,
+            temperature=0.7,
+            tools=tools,
+        )
 
-    token_usage[agent_id]["prompt"] += response.usage.prompt_tokens
-    token_usage[agent_id]["completion"] += response.usage.completion_tokens
+        token_usage[agent_id]["prompt"] += response.usage.prompt_tokens
+        token_usage[agent_id]["completion"] += response.usage.completion_tokens
 
-    content = response.choices[0].message.content
+        message = response.choices[0].message
 
-    if content is None:
-        return ""
+        if not message.tool_calls:
+            if message.content is None:
+                return ""
+            return message.content.strip()
 
-    return content.strip()
+        messages.append(message.model_dump(exclude_none=True))
+
+        for call in message.tool_calls:
+            result = run_tool(agent_id, call)
+            messages.append({"role": "tool", "tool_call_id": call.id, "content": result})
+
+    return "(stopped: too many tool calls)"
 
 if __name__ == "__main__":
-    messages = [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Say hi in one sentence."},
-    ]
-
     for agent_id in agent_dict:
         name = agent_dict[agent_id]["name"]
-        try:
-            reply = agent_ask(agent_id, messages)
-            print(f"{name}: {reply}")
-        except Exception as e:
-            print(f"{name}: ERROR {e}")
-    
+        messages = [
+            {"role": "user", "content": "Save a note saying 'test note', then read your notes and tell me what they say."},
+        ]
+        reply = agent_ask(agent_id, messages, tools=REVIEWER_TOOLS)
+        print(f"{name}: {reply}")
+
     print(token_usage)
