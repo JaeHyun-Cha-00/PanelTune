@@ -7,7 +7,7 @@ The small model being improved: [SmolLM2-360M-Instruct](https://huggingface.co/H
 | File | What it does |
 |---|---|
 | `data.py` | Turns the builder's recipe into 3,000 training examples, by picking the closest unused examples from the library for each search query |
-| `train.py` | Full fine-tune with TRL `SFTTrainer` on the Mac (MPS): learning rate 2e-5, 1 epoch, batch size 2 |
+| `train.py` | Full fine-tune with TRL `SFTTrainer` on the Mac (MPS), batch size 2. The builder picks the learning rate and epochs, kept inside the limits from the config |
 | `evaluate.py` | Scores a model on the four benchmarks with `lm-evaluation-harness`, and saves the scores and every answer |
 
 ## Benchmarks

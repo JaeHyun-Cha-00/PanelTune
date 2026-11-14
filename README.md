@@ -1,6 +1,6 @@
 # PanelTune
 
-A panel of five small AI agents takes turns fine-tuning an even smaller language model.
+A panel of four small AI agents takes turns fine-tuning an even smaller language model.
 
 ## 1. The Question
 
@@ -8,23 +8,23 @@ A panel of five small AI agents takes turns fine-tuning an even smaller language
 
 Small language models are cheap and run anywhere, but they fall far behind frontier models. One common way to improve them is to have a stronger model act as a teacher: it decides what training data to use and how to train.
 
-PanelTune tests a different idea: instead of one teacher, five small agents take turns improving the student, and the result is compared against each agent working alone.
+PanelTune tests a different idea: instead of one teacher, four small agents take turns improving the student, and the result is compared against each agent working alone.
 
 ## 2. How It Works
 
-PanelTune runs as a **relay** of five turns. In each turn, one agent builds and the other four review:
+PanelTune runs as a **relay** of four turns. In each turn, one agent builds and the other three review:
 
 1. **Build.** The builder reads the scores and feedback so far, picks training data from a shared library, then fine-tunes the student on 3,000 examples.
 2. **Benchmark.** The new version is scored on four benchmarks.
-3. **Discuss.** The other four agents review the scores and failures in a group chat, and pass feedback to the next builder.
+3. **Discuss.** The other three agents review the scores and failures in a group chat, and pass feedback to the next builder.
 
-**Baseline:** each agent also runs all five turns **alone**, with the same tools and the same training budget.
+**Baseline:** each agent also runs all four turns **alone**, with the same tools and the same training budget.
 
 ## 3. Setup
 
 **Student** ([`paneltune/student/`](paneltune/student/)): [SmolLM2-360M-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct), fully fine-tuned on a Mac.
 
-**Agents** ([`paneltune/panel/`](paneltune/panel/)): five small models: Qwen3.5 4B, Gemma 4 E4B, Llama 3.2 3B, Granite 4.2 3B, Ministral 3B.
+**Agents** ([`paneltune/panel/`](paneltune/panel/)): four small models: Qwen3.5 4B, Gemma 4 E4B, Llama 3.2 3B, Ministral 3B.
 
 **Benchmarks** ([`paneltune/student/`](paneltune/student/)): GSM8K (math), MMLU (knowledge), HumanEval (coding), IFEval (instruction following).
 

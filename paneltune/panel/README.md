@@ -1,6 +1,6 @@
 # Panel
 
-The five agents that build and review the student.
+The four agents that build and review the student.
 
 ## Agents
 
@@ -9,10 +9,9 @@ The five agents that build and review the student.
 | 1 | `Qwen/Qwen3.5-4B` | DeepInfra |
 | 2 | `google/gemma-4-E4B-it` | DeepInfra |
 | 3 | `meta-llama/Llama-3.2-3B-Instruct` | DeepInfra |
-| 4 | `ibm-granite/granite-4.2-3b` | DeepInfra |
-| 5 | `mistralai/ministral-3b-2512` | OpenRouter |
+| 4 | `mistralai/ministral-3b-2512` | OpenRouter |
 
-All five are called through OpenAI-compatible APIs at temperature 0.7. Tokens used by each agent are recorded.
+All four are called through OpenAI-compatible APIs at temperature 0.7. Tokens used by each agent are recorded.
 
 ## Files
 
