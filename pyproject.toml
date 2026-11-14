@@ -8,6 +8,7 @@ dependencies = [
     "lm-eval[ifeval]>=0.4.13",
     "openai>=3.49.0",
     "python-dotenv>=1.2.4",
+    "pyyaml>=6.0.3",
     "sentence-transformers>=6.3.0",
     "torch>=2.15.0",
     "transformers>=5.22.2",
