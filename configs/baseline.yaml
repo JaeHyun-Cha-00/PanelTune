@@ -1,0 +1,13 @@
+# One solo run: a single agent builds every turn and reviews its own results
+# Run with: uv run python -m scripts.run configs/baseline.yaml 3   (3 = the agent)
+
+mode: solo
+run_dir: runs/solo_agent{agent}
+
+examples_per_turn: 3000
+eval_limit: null          # null = the full benchmarks
+max_chat_rounds: 20       # not used in solo mode (no group chat)
+
+# limits for the builder's training settings (the builder prompt states these same limits)
+learning_rate: [1.0e-5, 5.0e-5]
+epochs: [1, 3]

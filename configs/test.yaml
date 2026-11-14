@@ -1,0 +1,12 @@
+# A small panel run to check that everything works, in a few minutes
+# Run with: uv run python -m scripts.run configs/test.yaml
+
+mode: panel
+run_dir: runs/test
+
+examples_per_turn: 20
+eval_limit: 5             # 5 questions per benchmark (MMLU: 5 per subject)
+max_chat_rounds: 3
+
+learning_rate: [1.0e-5, 5.0e-5]
+epochs: [1, 3]

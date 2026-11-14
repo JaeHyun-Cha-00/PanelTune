@@ -1,0 +1,13 @@
+# The 4-agent panel run: agent 1 builds turn 1, agent 2 builds turn 2, ... the others review
+# Run with: uv run python -m scripts.run configs/panel.yaml
+
+mode: panel
+run_dir: runs/relay
+
+examples_per_turn: 3000
+eval_limit: null          # null = the full benchmarks
+max_chat_rounds: 20
+
+# limits for the builder's training settings (the builder prompt states these same limits)
+learning_rate: [1.0e-5, 5.0e-5]
+epochs: [1, 3]
