@@ -22,8 +22,7 @@ agent_dict = {
     1: {"name": "Qwen3.5 4B", "model": "Qwen/Qwen3.5-4B", "provider": "deepinfra"},
     2: {"name": "Gemma 4 E4B", "model": "google/gemma-4-E4B-it", "provider": "deepinfra"},
     3: {"name": "Llama 3.2 3B", "model": "meta-llama/Llama-3.2-3B-Instruct", "provider": "deepinfra"},
-    4: {"name": "Granite 4.2 3B", "model": "ibm-granite/granite-4.2-3b", "provider": "deepinfra"},
-    5: {"name": "Ministral 3B", "model": "mistralai/ministral-3b-2512", "provider": "openrouter"},
+    4: {"name": "Ministral 3B", "model": "mistralai/ministral-3b-2512", "provider": "openrouter"},
 }
 
 token_usage = {
@@ -31,20 +30,22 @@ token_usage = {
     2: {"prompt": 0, "completion": 0},
     3: {"prompt": 0, "completion": 0},
     4: {"prompt": 0, "completion": 0},
-    5: {"prompt": 0, "completion": 0},
 }
 
 def run_tool(agent_id, call):
 
     name = call.function.name
-    args = json.loads(call.function.arguments or "{}")
 
-    if name in NEEDS_AGENT_ID:
-        args["agent_id"] = agent_id
+    # if the agent's tool call is wrong, send the error back to the agent instead of crashing
+    try:
+        args = json.loads(call.function.arguments or "{}")
+        if name in NEEDS_AGENT_ID:
+            args["agent_id"] = agent_id
+        return TOOL_FUNCTIONS[name](**args)
+    except Exception as error:
+        return f"Error: {error}"
 
-    return TOOL_FUNCTIONS[name](**args)
-
-def agent_ask(agent_id, messages, tools=None):
+def agent_ask(agent_id, messages, tools=None, rounds=5):
 
     agent = agent_dict[agent_id]
     messages = list(messages)
@@ -54,7 +55,13 @@ def agent_ask(agent_id, messages, tools=None):
     else:
         client = openrouter_client
 
-    for _ in range(5):
+    for round_number in range(rounds + 1):
+
+        # one extra round at the end, without tools, so the agent must write its answer
+        if round_number == rounds:
+            tools = None
+            messages.append({"role": "user", "content": "You are out of tool calls. Write your final answer now."})
+
         response = client.chat.completions.create(
             model=agent["model"],
             messages=messages,
