@@ -68,6 +68,38 @@ def evaluate(model_path, output_dir, limit=None):
                     }
                     f.write(json.dumps(record) + "\n")
 
+    breakdown(output_dir)
+    return scores
+
+def breakdown(output_dir):
+    # scores per MMLU subject and per IFEval rule, so reviewers can see where the
+    # student is weak without seeing any test question
+    from lm_eval.tasks.ifeval.utils import process_results
+
+    results = {"mmlu": {}, "ifeval": {}}   # name: [number correct, number of questions]
+
+    for line in open(os.path.join(output_dir, "samples", "mmlu.jsonl")):
+        record = json.loads(line)
+        subject = record["question"]["subject"]
+        results["mmlu"].setdefault(subject, [0, 0])
+        results["mmlu"][subject][0] += record["correct"]
+        results["mmlu"][subject][1] += 1
+
+    for line in open(os.path.join(output_dir, "samples", "ifeval.jsonl")):
+        record = json.loads(line)
+        followed = process_results(record["question"], [record["response"]])["inst_level_strict_acc"]
+        for rule, ok in zip(record["question"]["instruction_id_list"], followed):
+            results["ifeval"].setdefault(rule, [0, 0])
+            results["ifeval"][rule][0] += ok
+            results["ifeval"][rule][1] += 1
+
+    # turn [correct, total] into a score between 0 and 1
+    scores = {}
+    for task, groups in results.items():
+        scores[task] = {name: round(correct / total, 4) for name, (correct, total) in sorted(groups.items())}
+
+    with open(os.path.join(output_dir, "breakdown.json"), "w") as f:
+        json.dump(scores, f, indent=2)
     return scores
 
 if __name__ == "__main__":

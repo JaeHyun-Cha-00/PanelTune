@@ -2,13 +2,13 @@ from paneltune.panel.tools import load_library
 
 TOTAL = 3000   # training examples per turn
 
-def scale(queries):
-    # the agent's n's may not add up to TOTAL, so stretch or shrink them all by the same amount
+def scale(queries, total=TOTAL):
+    # the agent's n's may not add up to the total, so stretch or shrink them all by the same amount
     current = sum(item["n"] for item in queries)
-    scaled = [{"query": item["query"], "n": round(item["n"] * TOTAL / current)} for item in queries]
+    scaled = [{"query": item["query"], "n": round(item["n"] * total / current)} for item in queries]
 
     # rounding can be off by 1 or 2, so fix the last one to make the total exact
-    scaled[-1]["n"] += TOTAL - sum(item["n"] for item in scaled)
+    scaled[-1]["n"] += total - sum(item["n"] for item in scaled)
     return scaled
 
 def select(queries, used_ids):
